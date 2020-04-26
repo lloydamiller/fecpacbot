@@ -27,6 +27,15 @@ if __name__ == "__main__":
             pac_treasurer = pac["treasurer_name"].title()
             committee_id = pac["committee_id"]
             registration_url = fec.get_pac_registration_url(committee_id)
-            pac_tweet = f"{pac_name} in {pac_state} by {pac_treasurer} \n {registration_url}"
+            try:
+                associated_pacs = fec.get_treasurer_committees(pac_treasurer)
+                if len(associated_pacs) > 0:
+                    # make list of affiliated PACs
+                    pass
+                else:
+                    pass
+            except:
+                pass
+            pac_tweet = f"New PAC Registered: {pac_name} ({pac_state})\nTreasurer: {pac_treasurer}\n{registration_url}"
             twitter.send_tweet(pac_tweet)
             time.sleep(60)
