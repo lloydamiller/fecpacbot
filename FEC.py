@@ -3,17 +3,17 @@ import urllib.parse
 import requests
 import time
 import json
+from datetime import datetime, timedelta
 
 
 class FECAPI:
 
-    def __init__(self, api_key):
+    def __init__(self):
         with open("Resources/keys.json", "r") as f:
             self.api_key = json.load(f)["FEC"]
 
-    def api_call(self, endpoint, params, per_page=100):
+    def api_call(self, endpoint, params):
         base = "https://api.open.fec.gov/v1"
-        params["per_page"] = per_page
         page = 0
         results = []
         while True:
@@ -36,7 +36,7 @@ class FECAPI:
                     if page == 1:
                         page_count = j["pagination"]["pages"]
                         total_results = j["pagination"]["count"]
-                        print(f"[*] Found {total_results} results over {page_count} pages")
+                        print(f"[*] Found {total_results} results over {page_count} page(s) from {endpoint}")
                     print(f"[*] Retrieved page {page}")
                     results.extend(j["results"])
                     if "last_indexes" in j["pagination"].keys():
@@ -53,13 +53,60 @@ class FECAPI:
             time.sleep(0.5)
         return results
 
-    @staticmethod
-    def get_new_pacs(self):
+    def get_new_pacs(self, last_known_date=False):
         # get new PAC's since the registration date of the most previous PAC posted to Twitter + name
-        pass
+        if last_known_date is False:
+            days_to_get = timedelta(days=5)
+            last_known_date = datetime.now() - days_to_get
+            last_known_date = last_known_date.strftime("%Y-%m-%d")
+        endpoint = "/committees/"
+        params = {
+            "min_first_file_date": last_known_date,
+            "per_page": "100",
+            "sort_hide_null": "false",
+            "sort_null_only": "false"
+        }
+        results = self.api_call(endpoint, params)
+        # filter and format
+        committee_types = ["N", "O", "Q", "V", "W"]
+        filtered_results = []
+        for result in results:
+            if result["committee_type"] in committee_types:
+                filtered_results.append({
+                    "name": result["name"],
+                    "state": result["state"],
+                    "filing_date": result["first_file_date"],
+                    "committee_id": result["committee_id"],
+                    "treasurer_name": result["treasurer_name"]
+                })
+        return filtered_results
 
-    @staticmethod
-    def get_treasurer_committees(self, treasurer_first_name, treasurer_last_name):
+    def get_pac_registration_url(self, committee_id):
+        endpoint = f"/committee/{committee_id}/filings/"
+        params = {
+            "per_page": "1",
+            "sort_hide_null": "false",
+            "sort_null_only": "false",
+            "form_type": "F1"
+        }
+        results = self.api_call(endpoint, params)[0]
+        return results["pdf_url"]
+
+    def get_treasurer_committees(self, treasurer_name):
         # get all committees registered by
-        name = f"{treasurer_first_name} {treasurer_last_name}"
-        pass
+        endpoint = "/committees/"
+        params = {
+            "treasurer_name": treasurer_name,
+            "per_page": "100",
+            "sort_hide_null": "false",
+            "sort_null_only": "false"
+        }
+        results = self.api_call(endpoint, params)
+        filtered_results = []
+        for result in results:
+            filtered_results.append({
+                "name": result["name"],
+                "state": result["state"],
+                "cycles": ", ".join(result["cycles"])
+            })
+        return filtered_results
