@@ -2,6 +2,7 @@ import tweepy
 import json
 from datetime import datetime, timedelta
 import time
+import webbrowser
 
 
 class TwitterAPI:
@@ -10,14 +11,31 @@ class TwitterAPI:
         with open("Resources/keys.json", "r") as f:
             keys = json.load(f)["Twitter"]
 
-        twitter_api = keys["API_KEY"]
-        twitter_api_secret = keys["API_KEY_SECRET"]
-        twitter_api_access = keys["ACCESS_TOKEN"]
-        twitter_api_access_secret = keys["ACCESS_TOKEN_SECRET"]
+        api_key = keys["API_KEY"]
+        api_key_secret = keys["API_KEY_SECRET"]
 
-        auth = tweepy.OAuthHandler(twitter_api, twitter_api_secret)
-        auth.set_access_token(twitter_api_access, twitter_api_access_secret)
-        self.api = tweepy.API(auth)
+        auth = tweepy.OAuthHandler(api_key, api_key_secret)
+
+        print("[*] Opening web browser. Login to target Twitter account and copy PIN.")
+
+        try:
+            redirect_url = auth.get_authorization_url()
+            webbrowser.open(redirect_url)
+        except tweepy.TweepError:
+            print("[!] Error, failed to get request token. Exiting program.")
+            quit()
+
+        while True:
+            try:
+                pin = input("[?] Enter pin: ").strip()
+                token = auth.get_access_token(verifier=pin)
+                access_token = token[0]
+                access_token_secret = token[1]
+                auth.set_access_token(access_token, access_token_secret)
+                self.api = tweepy.API(auth, wait_on_rate_limit_notify=True)
+                break
+            except tweepy.error.TweepError:
+                print("[!] Error, pin not valid, please re-enter.")
 
     def rate_limit_check(self):
         rate_limit = self.api.rate_limit_status()["resources"]
