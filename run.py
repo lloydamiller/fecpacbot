@@ -13,7 +13,7 @@ if __name__ == "__main__":
     print("[*] Initializing connection to Twitter")
     # Intialize Twitter bot
     twitter = TwitterAPI()
-    current_user_account = twitter.me()
+    current_user_account = twitter.api.me()
     print(f"[*] You are now logged in as {current_user_account.name} (@{current_user_account.screen_name})")
 
     # begin process
