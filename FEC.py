@@ -13,6 +13,7 @@ class FECAPI:
             self.api_key = json.load(f)["FEC"]
 
     def api_call(self, endpoint, params):
+        # TODO fix print statements to make more readable/less repetitive
         base = "https://api.open.fec.gov/v1"
         page = 0
         results = []
@@ -36,8 +37,7 @@ class FECAPI:
                     if page == 1:
                         page_count = j["pagination"]["pages"]
                         total_results = j["pagination"]["count"]
-                        print(f"[*] Found {total_results} results over {page_count} page(s) from {endpoint}")
-                    print(f"[*] Retrieved page {page}")
+                        # print(f"[*] Found {total_results} results over {page_count} page(s) from {endpoint}")
                     results.extend(j["results"])
                     if "last_indexes" in j["pagination"].keys():
                         for key in j["pagination"]["last_indexes"]:
