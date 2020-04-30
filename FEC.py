@@ -107,6 +107,6 @@ class FECAPI:
             filtered_results.append({
                 "name": result["name"],
                 "state": result["state"],
-                "cycles": ", ".join(result["cycles"])
+                "cycles": ", ".join([str(x) for x in result["cycles"]])
             })
         return filtered_results

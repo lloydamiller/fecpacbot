@@ -48,14 +48,15 @@ if __name__ == "__main__":
                         associated_pacs = fec.get_treasurer_committees(pac_treasurer)
                         if len(associated_pacs) > 0:
                             for associated_pac in associated_pacs:
-                                pac_name = associated_pac["name"]
-                                pac_state = associated_pac["state"]
-                                pac_cyles = associated_pac["cycles"]
-                                pac_tweet = f"Affiliated PAC: {pac_name} ({pac_state})\nActive: {pac_cyles}\n"
-                                if len(pac_tweet) > 280:
-                                    pac_tweet = pac_tweet[:280]
-                                if post_id is not False:
-                                    post_id = twitter.send_tweet(pac_tweet, in_reply_to_status_id=post_id)
+                                affiliated_pac_name = associated_pac["name"]
+                                if pac_name != affiliated_pac_name:
+                                    affiliated_pac_state = associated_pac["state"]
+                                    affiliated_pac_cyles = associated_pac["cycles"]
+                                    pac_tweet = f"Affiliated PAC: {affiliated_pac_name} ({affiliated_pac_state})\nActive: {affiliated_pac_cyles}"
+                                    if len(pac_tweet) > 280:
+                                        pac_tweet = pac_tweet[:280]
+                                    if post_id is not False:
+                                        post_id = twitter.send_tweet(pac_tweet, in_reply_to_status_id=post_id)
                         else:
                             pass
                     except:
