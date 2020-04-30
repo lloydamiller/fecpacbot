@@ -49,14 +49,17 @@ class TwitterAPI:
                 elif limit > remaining:
                     print(f"[-] {remaining}/{limit} calls remaining for {rate}:{endpoint}")
 
-    def send_tweet(self, text):
+    def send_tweet(self, text, in_reply_to_status_id=False):
         while True:
             try:
-                post = self.api.update_status(text)
+                if in_reply_to_status_id is False:
+                    post = self.api.update_status(text)
+                else:
+                    post = self.api.update_status(text, in_reply_to_status_id=in_reply_to_status_id)
                 screen_name = self.api.me().screen_name
                 posted_tweet_url = f"https://twitter.com/{screen_name}/status/{post.id_str}"
                 print(f"[*] Tweet posted to {posted_tweet_url}")
-                break
+                return post.id_str
             except tweepy.error.RateLimitError:
                 resume_time = (datetime.now() + timedelta(minutes=15)).strftime("%I:%M:%S %p")
                 print(f"[!] Potential rate limit hit for an endpoint, initiating 15-minute pause, will resume at {resume_time}")
@@ -65,4 +68,4 @@ class TwitterAPI:
             except tweepy.TweepError as e:
                 error_message = e.args[0][0]["message"]
                 print(f"[!] Error posting tweet: {error_message}")
-                break
+                return False

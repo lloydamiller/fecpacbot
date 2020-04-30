@@ -41,19 +41,25 @@ if __name__ == "__main__":
                     pac_treasurer = pac["treasurer_name"].title()
                     committee_id = pac["committee_id"]
                     registration_url = fec.get_pac_registration_url(committee_id)
-                    # TODO identify and display affiliated PACs
-                    # try:
-                    #     associated_pacs = fec.get_treasurer_committees(pac_treasurer)
-                    #     if len(associated_pacs) > 0:
-                    #         # make list of affiliated PACs
-                    #         # tweet thread or image?
-                    #     else:
-                    #         pass
-                    # except:
-                    #     pass
                     pac_tweet = f"New PAC: {pac_name} ({pac_state})\nTreasurer: {pac_treasurer}\n{registration_url}"
-                    twitter.send_tweet(pac_tweet)
-                    time.sleep(60)
+                    post_id = twitter.send_tweet(pac_tweet)
+                    time.sleep(10)
+                    try:
+                        associated_pacs = fec.get_treasurer_committees(pac_treasurer)
+                        if len(associated_pacs) > 0:
+                            for associated_pac in associated_pacs:
+                                pac_name = associated_pac["name"]
+                                pac_state = associated_pac["state"]
+                                pac_cyles = associated_pac["cycles"]
+                                pac_tweet = f"Affiliated PAC: {pac_name} ({pac_state})\nActive: {pac_cyles}\n"
+                                if len(pac_tweet) > 280:
+                                    pac_tweet = pac_tweet[:280]
+                                if post_id is not False:
+                                    post_id = twitter.send_tweet(pac_tweet, in_reply_to_status_id=post_id)
+                        else:
+                            pass
+                    except:
+                        pass
         # save new PACs to the master PAC JSON file
         with open("Resources/posted_pacs.json", "w") as f:
             cut_off_length = 500
