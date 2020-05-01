@@ -6,6 +6,11 @@ import json
 from datetime import datetime, timedelta
 
 
+def timestamp():
+    d = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return d
+
+
 class FECAPI:
 
     def __init__(self):
@@ -13,7 +18,6 @@ class FECAPI:
             self.api_key = json.load(f)["FEC"]
 
     def api_call(self, endpoint, params):
-        # TODO fix print statements to make more readable/less repetitive
         base = "https://api.open.fec.gov/v1"
         page = 0
         results = []
@@ -31,7 +35,7 @@ class FECAPI:
                     if len(j["results"]) == 0:
                         break
                 except AttributeError:
-                    print(f"[!] Results not returned as JSON")
+                    print(f"[!] {timestamp()} Results not returned as JSON")
                     break
                 try:
                     if page == 1:
@@ -45,12 +49,13 @@ class FECAPI:
                     else:
                         break
                 except Exception as e:
-                    print(f"[!] Error: {e}")
+                    print(f"[!] {timestamp()} Error: {e}")
                     break
             else:
-                print(f"[!] Connection Error: {r.status_code}")
+                print(f"[!] {timestamp()} Connection Error: {r.status_code}")
                 break
             time.sleep(0.5)
+        print(f"[*] {timestamp()} Found {len(results)} result(s) from FEC {endpoint}")
         return results
 
     def get_new_pacs(self, last_known_date=False):
@@ -107,6 +112,7 @@ class FECAPI:
             filtered_results.append({
                 "name": result["name"],
                 "state": result["state"],
-                "cycles": ", ".join([str(x) for x in result["cycles"]])
+                "cycles": ", ".join([str(x) for x in result["cycles"]]),
+                "most_recent_cycle": max(result["cycles"])
             })
         return filtered_results
