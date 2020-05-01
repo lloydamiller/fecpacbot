@@ -60,10 +60,12 @@ class FECAPI:
 
     def get_new_pacs(self, last_known_date=False):
         # get new PAC's since the registration date of the most previous PAC posted to Twitter + name
+        days_to_get = timedelta(days=5)
         if last_known_date is False:
-            days_to_get = timedelta(days=5)
             last_known_date = datetime.now() - days_to_get
-            last_known_date = last_known_date.strftime("%Y-%m-%d")
+        else:
+            last_known_date = last_known_date - days_to_get
+        last_known_date = last_known_date.strftime("%Y-%m-%d")
         endpoint = "/committees/"
         params = {
             "min_first_file_date": last_known_date,
@@ -95,7 +97,7 @@ class FECAPI:
             "form_type": "F1"
         }
         results = self.api_call(endpoint, params)[0]
-        return results["pdf_url"]
+        return results["html_url"]
 
     def get_treasurer_committees(self, treasurer_name):
         # get all committees registered by
