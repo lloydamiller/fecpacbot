@@ -64,7 +64,7 @@ class FECAPI:
         if last_known_date is False:
             last_known_date = datetime.now() - days_to_get
         else:
-            last_known_date = last_known_date - days_to_get
+            last_known_date = datetime.strptime(last_known_date, "%Y-%m-%d") - days_to_get
         last_known_date = last_known_date.strftime("%Y-%m-%d")
         endpoint = "/committees/"
         params = {

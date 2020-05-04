@@ -36,9 +36,9 @@ if __name__ == "__main__":
         else:
             print(f"[*] {timestamp()} Found {len(new_pacs)} new registration(s)")
             for pac in new_pacs:
-                counter += 1
                 pac_name = pac["name"]
                 if pac_name not in saved_pacs:
+                    counter += 1
                     saved_pacs.append(pac_name)
                     pac_state = pac["state"]
                     pac_treasurer = pac["treasurer_name"].title()
